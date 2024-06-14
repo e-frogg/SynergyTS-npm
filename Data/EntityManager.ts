@@ -3,7 +3,6 @@ import DataLoader from "./DataLoader";
 import RepositoryManager from "./RepositoryManager";
 import Repository from "./Repository";
 import DiffManager from "./DiffManager";
-import Work from "../../../../../assets/src/Data/Entity/Work";
 
 export default class EntityManager {
 
@@ -11,7 +10,7 @@ export default class EntityManager {
     private _diffManager: DiffManager;
     constructor(
         private readonly _repositoryManager: RepositoryManager,
-        public apiBaseUrl: string = '/jsapi/entity'
+        public apiBaseUrl: string = '/synergy/entity'
     ) {
         this._diffManager = new DiffManager();
         this._dataLoader = new DataLoader(_repositoryManager, this._diffManager);
