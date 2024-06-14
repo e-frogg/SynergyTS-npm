@@ -91,7 +91,7 @@ export default class DataLoader extends EventDispatcher {
         return new Promise((resolve, fail) => {
 
             fetch(url, fetchParams).then(response => {
-                return response.json().then(({mercureUrl, data, mainIds}) => {
+                return response.json().then(({mercureUrl, data, mainIds}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<number|string>}}) => {
                     this.inject(data, true)
                     this.initialize();
                     if (mercureUrl) {
@@ -101,8 +101,14 @@ export default class DataLoader extends EventDispatcher {
                     let mainEntities: Array<Entity> = [];
                     if (mainIds) {
                         // flatten all entities
-                        for(const [entityName, ids]:[string,Array<number|string>] of Object.entries(mainIds)) {
+                        for(const [entityName, ids] of Object.entries(mainIds)) {
                             let repo = this.repositoryManager.getRepositoryByClassName(entityName);
+                            if(!repo) {
+                                // fail('repository not found for ' + entityName);
+                                // return;
+                                console.warn('repository not found for ' + entityName);
+                                continue;
+                            }
                             let entities = ids
                                 .map((id: string | number) => repo.get(id))
                                 .filter((entity: Entity | null) => entity !== null) as Array<Entity>;
@@ -115,8 +121,12 @@ export default class DataLoader extends EventDispatcher {
                             entities: Array<Entity>
                         }) => {
                             let repo = this.repositoryManager.getRepositoryByClassName(entityName);
+                            if(!repo) {
+                                console.warn('repository not found for ' + entityName);
+                                return acc;
+                            }
                             let entities = entitiesData
-                                .map((entityData: string | number) => repo.get(entityData.id))
+                                .map((entityData: { id:number|string }) => repo.get(entityData.id))
                                 .filter((entity: Entity | null) => entity !== null) as Array<Entity>;
                             mainEntities.push(...entities);
 

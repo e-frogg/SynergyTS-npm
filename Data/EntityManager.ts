@@ -4,6 +4,10 @@ import RepositoryManager from "./RepositoryManager";
 import Repository from "./Repository";
 import DiffManager from "./DiffManager";
 
+interface EntityClass<T extends Entity> {
+    new(...args: any[]): T;
+}
+
 export default class EntityManager {
 
     private _dataLoader: DataLoader;
@@ -100,6 +104,7 @@ export default class EntityManager {
         return str.split(/(?=[A-Z])/).join('_').toLowerCase();
     }
 
+    // forward to dataLoader
     public load( url: string, data: object | null = null, method: string = 'GET'): Promise<{fullData:Entity[],result:Entity[]}> {
         return new Promise((resolve, reject) => {
             this.dataLoader.load(url, data, method).then((event) => {
@@ -109,6 +114,11 @@ export default class EntityManager {
                 reject(error);
             });
         });
+    }
+
+    // forward to repositoryManager
+    getRepository<T extends Entity>(theClass: EntityClass<T>): Repository<T> {
+        return this.repositoryManager.getRepository(theClass);
     }
 
     public clear() {
