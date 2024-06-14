@@ -1,0 +1,15 @@
+{
+    "name": "@efrogg/jsapi",
+    "description": "Integration of Doctrine for Vue.js in Symfony",
+    "license": "MIT",
+    "version": "0.0.1",
+    "main": "dist/register_controller.js",
+    "types": "dist/register_controller.d.ts",
+    "peerDependencies": {
+        "ts-loader": "^9.5.1",
+        "typescript": "^5.3.3",
+        "vue": "^3.4.27"
+    },
+    "devDependencies": {
+    }
+}
