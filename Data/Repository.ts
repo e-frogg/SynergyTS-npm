@@ -2,6 +2,10 @@ import Entity from "./Entity";
 import EventDispatcher from "./EventDispatcher";
 import ListChangedEvent from "./Event/ListChangedEvent";
 import {reactive} from "vue";
+import ValueExtractor from "./ValueExtractor";
+import Criteria from "./Criteria/Criteria";
+import CriteriaConverter from "./Criteria/CriteriaConverter";
+import ItemListChangedEvent from "./Event/ItemListChangedEvent";
 
 export default class Repository<EntityType extends Entity> extends EventDispatcher implements Iterable<Entity>{
 
@@ -34,25 +38,21 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         return this.pk[id] ?? null;
     }
 
-    getItemBy(criteria: { [key: string]: any }): EntityType | null {
-        return this.entities.find((item: EntityType) => this.itemMatch(item, criteria))??null;
-    }
-
     filter(callback: (entity:EntityType)=>boolean): Repository<EntityType> {
         return new Repository(this._entityClass,this.entities.filter(callback))
     }
 
-    private itemMatch(item: EntityType, criteria: { [key: string]: any }) {
-        for (let key in criteria) {
-            if (item[key as keyof EntityType] !== criteria[key]) {
-                return false
-            }
-        }
-        return true;
-    }
+    search(criteria: Criteria|{ [key: string]: any }) {
+        let realCriteria = (criteria instanceof Criteria) ? criteria : CriteriaConverter.convertCriteria(criteria);
+        let items = new Repository(this._entityClass, this.entities.filter(item => this.itemMatch(item, realCriteria)));
 
-    findItemsBy(criteria: object): Repository<EntityType> {
-        return new Repository(this._entityClass,this.entities.filter(item => this.itemMatch(item, criteria)));
+        for (let sort of realCriteria.sorts) {
+            console.log('sort',sort);
+            // items = items.sort(sort.compare);
+            items = items.sort(sort.compare.bind(sort));
+        }
+        // todo : limit
+        return items;
     }
 
     map(callback: any): any {
@@ -142,8 +142,10 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
     }
 
     dispatchListChangedEvent() {
-        let customEvent = new ListChangedEvent(this);
-        this.dispatchEvent(customEvent);
+        this.dispatchEvent(new ListChangedEvent(this));
+    }
+    dispatchEntityChangedEvent(entityIds: Array<string | number>) {
+        this.dispatchEvent(new ItemListChangedEvent(this, entityIds));
     }
 
     private addItems(items: EntityType[]) {
@@ -175,4 +177,14 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
     first(): EntityType | null{
         return this.entities[0]??null;
     }
+
+
+    private itemMatch(item: EntityType, criteria: Criteria) {
+        for (const filter of criteria.filters) {
+            let value = ValueExtractor.extractValue(item, filter.field);
+            return filter.match(value);
+        }
+        return true;
+    }
+
 }

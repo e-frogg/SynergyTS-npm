@@ -9,7 +9,7 @@ export default class TreeBuilder {
 
     public buildTree(categories: TreeItem[], level: number=0) {
         categories.forEach((category) => {
-            category.children = this.categoryRepository.findItemsBy({parentId: category.id}).getItems();
+            category.children = this.categoryRepository.search({parentId: category.id}).getItems();
             category.level = level;
             this.buildTree(category.children,level+1);
         })

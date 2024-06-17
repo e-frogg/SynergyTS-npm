@@ -15,12 +15,12 @@ export default class Entity extends EventDispatcher {
     private _repositoryManager: RepositoryManager|null = null;
 
     constructor(
-        public id: string | number
+        public id: string | number| undefined = undefined
     ) {
         super();
     }
 
-    public getId(): string | number {
+    public getId(): string | number | undefined  {
         return this.id;
     }
 
@@ -141,5 +141,10 @@ export default class Entity extends EventDispatcher {
     private dispatchEntityChangedEvent( updatedData: { [key: string]: any }) {
         let customEvent = new EntityChangedEvent(this, updatedData);
         this.dispatchEvent(customEvent);
+    }
+
+    public clone(): this {
+        return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+
     }
 }

@@ -19,10 +19,14 @@ export default class DiffManager {
     }
 
     private diff(original: { [key: string]: any },current: { [key: string]: any }): { [key: string]: any } {
+        if(!original) {
+            return current;
+        }
+
         let diff: { [key: string]: any } = {};
         for(let key in current) {
             if(current[key] !== original[key]) {
-                console.log('diff',key,current[key],original[key])
+                // console.log('diff',key,current[key],original[key])
                 diff[key] = current[key];
             }
         }

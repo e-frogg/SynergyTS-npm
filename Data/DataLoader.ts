@@ -1,5 +1,4 @@
 import RepositoryManager from "./RepositoryManager";
-// import TreeBuilder from "./Tree/TreeBuilder";
 import EventDispatcher from "./EventDispatcher";
 import DataLoadedEvent from "./Event/DataLoadedEvent";
 import Entity from "./Entity";
@@ -126,7 +125,7 @@ export default class DataLoader extends EventDispatcher {
                                 return acc;
                             }
                             let entities = entitiesData
-                                .map((entityData: { id:number|string }) => repo.get(entityData.id))
+                                .map((entityData: { id:number|string|undefined }) => entityData.id?repo.get(entityData.id):null)
                                 .filter((entity: Entity | null) => entity !== null) as Array<Entity>;
                             mainEntities.push(...entities);
 
@@ -212,6 +211,9 @@ export default class DataLoader extends EventDispatcher {
 
             if (addedIds.length > 0 || removedIds.length > 0) {
                 repository.dispatchListChangedEvent();
+            }
+            if(injectedIds.length > 0) {
+                repository.dispatchEntityChangedEvent(injectedIds);
             }
         })
     }
