@@ -36,7 +36,7 @@ export default class Entity extends EventDispatcher {
         this._repositoryManager = value;
     }
 
-    protected getRelation<T extends Entity>(theClass: EntityClass<T>, id: string): T | null {
+    protected getRelation<T extends Entity>(theClass: EntityClass<T>, id: string|null): T | null {
         if(null === id || this._repositoryManager === null) {
             return null;
         }
