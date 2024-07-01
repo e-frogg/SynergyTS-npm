@@ -15,16 +15,16 @@ export default class Entity extends EventDispatcher {
     private _repositoryManager: RepositoryManager|null = null;
 
     constructor(
-        public id: string | number| undefined = undefined
+        public id: string | number | null = null
     ) {
         super();
     }
 
-    public getId(): string | number | undefined  {
+    public getId(): string | number | null  {
         return this.id;
     }
 
-    setId(id: string | number) {
+    setId(id: number | string) {
         this.id = id;
     }
 
@@ -36,7 +36,7 @@ export default class Entity extends EventDispatcher {
         this._repositoryManager = value;
     }
 
-    protected getRelation<T extends Entity>(theClass: EntityClass<T>, id: string|null): T | null {
+    protected getRelation<T extends Entity>(theClass: EntityClass<T>, id: string|number|null): T | null {
         if(null === id || this._repositoryManager === null) {
             return null;
         }

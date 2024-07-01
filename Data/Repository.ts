@@ -34,7 +34,10 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         return this.entities;
     }
 
-    get(id: string | number): EntityType | null {
+    get(id: string | number | null): EntityType | null {
+        if(null === id) {
+            return null;
+        }
         return this.pk[id] ?? null;
     }
 
@@ -79,16 +82,22 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
 
     add(entity: EntityType, dispatchUpdate: boolean = true): void {
         // remplace existing item
-        let existing: EntityType | null = this.get(entity.getId());
+        let entityId = entity.getId();
+        if(null === entityId) {
+            console.error('entity id is null');
+            return;
+        }
+
+        let existing: EntityType | null = this.get(entityId);
         if (existing) {
-            console.error('item already with id '+entity.getId()+' exists')
+            console.error('item already with id '+entityId+' exists')
             return;
         }
 
         this.entities.push(entity);
 
         // maintainIndex
-        this.pk[entity.getId()] = entity;
+        this.pk[entityId] = entity;
 
         // dispatch update event
         dispatchUpdate && this.dispatchListChangedEvent();
@@ -133,7 +142,10 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
     private updateIndex() {
         this.pk = {};
         this.entities.forEach((item: EntityType) => {
-            this.pk[item.getId().toString()] = item;
+            let entityId = item.getId();
+            if(entityId !== null) {
+                this.pk[entityId.toString()] = item;
+            }
         })
     }
 
@@ -178,11 +190,21 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         return this.entities[0]??null;
     }
 
-
+    /**
+     * Check if an item match the criteria
+     * the item must match every filter
+     * if no filter is provided, the item will match
+     *
+     * @param item
+     * @param criteria
+     * @private
+     */
     private itemMatch(item: EntityType, criteria: Criteria) {
         for (const filter of criteria.filters) {
             let value = ValueExtractor.extractValue(item, filter.field);
-            return filter.match(value);
+            if (!filter.match(value)) {
+                return false;
+            }
         }
         return true;
     }
