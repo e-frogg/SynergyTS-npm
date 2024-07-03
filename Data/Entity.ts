@@ -129,13 +129,13 @@ export default class Entity extends EventDispatcher {
             // }
             //TODO : conversion , universal time ....
             if(json[key] instanceof Date) {
-                console.warn('date',json[key])
+                // console.warn('date',json[key])
                 json[key] = json[key].toISOString();
             }
             if(json[key] instanceof Object) {
                 // json convert
                 json[key] = Object.assign({}, json[key]);
-                console.log("save original",key,json[key]);
+                // console.log("save original",key,json[key]);
             }
         }
         return json;

@@ -11,7 +11,6 @@ export default class DiffManager {
     public computeDiff(entity: Entity): { [key: string]: any } {
         const original = this.original[this.getCacheKey(entity)];
         const current = entity.toJson();
-        console.log('compute diff',this.original,original,current)
         return this.diff(original,current);
     }
 
@@ -36,10 +35,10 @@ export default class DiffManager {
                 o = JSON.stringify(Object.assign({}, o));
             }
             if(c !== o) {
-                console.log('diff',key,c,o)
+                // console.log('diff',key,c,o)
                 diff[key] = current[key];
-            } else {
-                console.log('same',key,c,o)
+            // } else {
+                // console.log('same',key,c,o)
             }
         }
         return diff;
