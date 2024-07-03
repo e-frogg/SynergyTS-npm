@@ -10,8 +10,8 @@ interface EntityClass<T extends Entity> {
 
 export default class EntityManager {
 
-    private _dataLoader: DataLoader;
-    private _diffManager: DiffManager;
+    private readonly _dataLoader: DataLoader;
+    private readonly _diffManager: DiffManager;
     constructor(
         private readonly _repositoryManager: RepositoryManager,
         public apiBaseUrl: string = '/synergy/entity'
@@ -83,7 +83,7 @@ export default class EntityManager {
     save(entity: Entity): Promise<Entity> {
         // save entity to the database
         let diff = this._diffManager.computeDiff(entity);
-        // console.log('diff',diff);
+        console.log('diff',diff);
         // return;
         // let json = entity.toJson();
 

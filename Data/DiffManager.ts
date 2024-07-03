@@ -4,18 +4,19 @@ export default class DiffManager {
 
     private original: { [key: string]: { [key: string]: any } } = {};
 
-    // TODO : améliorer out ça !!!
-    // TODO : améliorer out ça !!!
-    // TODO : améliorer out ça !!!
     public persistOriginal(entity: Entity,entityJson: { [key: string]: any }): void {
-        // this.original[entity.getId()] = entityJson;
-        this.original[entity.getId()] = entity.toJson();
+        this.original[this.getCacheKey(entity)] = entity.toJson();
     }
 
     public computeDiff(entity: Entity): { [key: string]: any } {
-        const original = this.original[entity.getId()];
+        const original = this.original[this.getCacheKey(entity)];
         const current = entity.toJson();
+        console.log('compute diff',this.original,original,current)
         return this.diff(original,current);
+    }
+
+    private getCacheKey(entity: Entity) {
+        return entity.constructor.name+"-"+entity.getId();
     }
 
     private diff(original: { [key: string]: any },current: { [key: string]: any }): { [key: string]: any } {
@@ -25,9 +26,20 @@ export default class DiffManager {
 
         let diff: { [key: string]: any } = {};
         for(let key in current) {
-            if(current[key] !== original[key]) {
-                // console.log('diff',key,current[key],original[key])
+
+            let c = current[key];
+            let o = original[key];
+            if(c instanceof Object) {
+                c = JSON.stringify(Object.assign({}, c));
+            }
+            if(o instanceof Object) {
+                o = JSON.stringify(Object.assign({}, o));
+            }
+            if(c !== o) {
+                console.log('diff',key,c,o)
                 diff[key] = current[key];
+            } else {
+                console.log('same',key,c,o)
             }
         }
         return diff;

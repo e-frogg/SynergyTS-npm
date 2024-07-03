@@ -1,20 +1,20 @@
 export default class EventDispatcher {
-    private eventDispatcher: any;
+    private _eventDispatcher: any;
 
     constructor() {
-        this.eventDispatcher = document.createElement('div');
+        this._eventDispatcher = document.createElement('div');
     }
 
     addEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: AddEventListenerOptions | boolean): void {
-        this.eventDispatcher.addEventListener(type, callback, options);
+        this._eventDispatcher.addEventListener(type, callback, options);
     }
 
     removeEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: EventListenerOptions | boolean): void {
-        this.eventDispatcher.removeEventListener(type, callback, options);
+        this._eventDispatcher.removeEventListener(type, callback, options);
     }
 
     dispatchEvent(event: Event): boolean {
-        return this.eventDispatcher.dispatchEvent(event);
+        return this._eventDispatcher.dispatchEvent(event);
     }
 
 }
