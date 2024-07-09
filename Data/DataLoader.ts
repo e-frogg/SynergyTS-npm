@@ -178,7 +178,7 @@ export default class DataLoader extends EventDispatcher {
             // console.log('inject ',entityName,entities)
             const repository = this.repositoryManager.getRepositoryByClassName(entityName);
             if(!repository) {
-                console.error('repository not found for ' + entityName);
+                console.warn('repository not found for ' + entityName);
                 return;
                 // throw new Error('repository not found for ' + entityName);
             }

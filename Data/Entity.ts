@@ -95,7 +95,6 @@ export default class Entity extends EventDispatcher {
 
     toJson(deleteNull: boolean = true): { [key: string]: any } {
         let json: { [key: string]: any } = Object.assign({}, this);
-        // console.log(json,this);
         for (let key in json) {
             if(
                 (json[key] === null && deleteNull)
@@ -130,11 +129,15 @@ export default class Entity extends EventDispatcher {
             // }
             //TODO : conversion , universal time ....
             if(json[key] instanceof Date) {
-                console.warn('date',json[key])
+                // console.warn('date',json[key])
                 json[key] = json[key].toISOString();
             }
+            if(json[key] instanceof Object) {
+                // json convert
+                json[key] = Object.assign({}, json[key]);
+                // console.log("save original",key,json[key]);
+            }
         }
-        delete json.eventDispatcher;
         return json;
     }
 

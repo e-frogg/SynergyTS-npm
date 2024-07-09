@@ -12,8 +12,8 @@ interface EntityClass<T extends Entity> {
 
 export default class EntityManager {
 
-    private _dataLoader: DataLoader;
-    private _diffManager: DiffManager;
+    private readonly _dataLoader: DataLoader;
+    private readonly _diffManager: DiffManager;
     constructor(
         private readonly _repositoryManager: RepositoryManager,
         public apiBaseUrl: string = '/synergy/entity'
@@ -50,7 +50,7 @@ export default class EntityManager {
     update(entity: Entity, update: {[key: string]:any}): Promise<Entity> {
         let entityType = entity.constructor.name;
         // delete json.id;
-        console.log('save',update);
+        console.log('update',update);
 
         return new Promise((resolve, reject) => {
             let url = entity._isPersisted
@@ -82,14 +82,18 @@ export default class EntityManager {
         });
         // return new Promise()
     }
-    save(entity: Entity): Promise<Entity> {
+    public save(entity: Entity): Promise<Entity> {
         // save entity to the database
         let diff = this._diffManager.computeDiff(entity);
-        // console.log('diff',diff);
-        // return;
-        // let json = entity.toJson();
-
+        if(Object.keys(diff).length === 0) {
+            return new Promise((resolve, reject) => {
+                resolve(entity);
+            });
+        }
         return this.update(entity, diff);
+    }
+    public saveMultiple(entities: Entity[]): Promise<Entity[]> {
+        return Promise.all(entities.map(entity => this.save(entity)));
     }
 
     search<T extends Entity>(theClass: EntityClass<T>, criteria: Criteria): Promise<{
