@@ -1,7 +1,7 @@
 import Filter from "./Filter";
 
 export default class EqualsFilter extends Filter {
-    constructor(field: string, private value: any) {
+    constructor(field: string, public readonly value: any) {
         super(field);
     }
 

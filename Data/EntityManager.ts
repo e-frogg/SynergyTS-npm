@@ -3,6 +3,8 @@ import DataLoader from "./DataLoader";
 import RepositoryManager from "./RepositoryManager";
 import Repository from "./Repository";
 import DiffManager from "./DiffManager";
+import Criteria from "./Criteria/Criteria";
+import CriteriaConverter from "./Criteria/CriteriaConverter";
 
 interface EntityClass<T extends Entity> {
     new(...args: any[]): T;
@@ -90,11 +92,27 @@ export default class EntityManager {
         return this.update(entity, diff);
     }
 
+    search<T extends Entity>(theClass: EntityClass<T>, criteria: Criteria): Promise<{
+        fullData: Entity[],
+        result: Entity[]
+    }> {
+        console.log( this.getSearchUrl(theClass.name),
+            CriteriaConverter.toJson(criteria));
+        return this.load(
+            this.getSearchUrl(theClass.name),
+            CriteriaConverter.toJson(criteria),
+            'POST'
+        )
+    }
+
     private getCollectionUrl(entityType: string) {
         return `${this.apiBaseUrl}/${entityType}`;
     }
     private getEntityUrl(entityType: string, id: string | number) {
         return this.getCollectionUrl(entityType)+`/${id}`;
+    }
+    private getSearchUrl(entityType: string): string {
+        return `${this.apiBaseUrl}/search/${entityType}`;
     }
     private getActionUrl(entityType: string, action: string) {
         return this.getCollectionUrl(entityType)+`/${action}`;

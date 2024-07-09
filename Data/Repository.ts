@@ -46,7 +46,7 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
     }
 
     search(criteria: Criteria|{ [key: string]: any }) {
-        let realCriteria = (criteria instanceof Criteria) ? criteria : CriteriaConverter.convertCriteria(criteria);
+        let realCriteria = (criteria instanceof Criteria) ? criteria : CriteriaConverter.fromBasicCriteria(criteria);
         let items = new Repository(this._entityClass, this.entities.filter(item => this.itemMatch(item, realCriteria)));
 
         for (let sort of realCriteria.sorts) {
