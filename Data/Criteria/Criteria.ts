@@ -12,6 +12,11 @@ export default class Criteria {
     private _limit: number | null = null
     private _offset: number | null = null
 
+
+    constructor(
+        private ids: null|Array<number|string> = null,
+    ) {
+    }
     addAssociation(path: string): this {
         this.getAssociation(path)
 
@@ -51,6 +56,15 @@ export default class Criteria {
 
     setOffset(offset: number | null): this {
         this._offset = offset;
+        return this;
+    }
+
+    getIds(): Array<string|number>|null {
+        return this.ids;
+    }
+
+    setIds(ids: null|Array<number|string>) {
+        this.ids = ids;
         return this;
     }
 

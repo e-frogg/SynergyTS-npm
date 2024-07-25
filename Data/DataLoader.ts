@@ -125,7 +125,7 @@ export default class DataLoader extends EventDispatcher {
                                 return acc;
                             }
                             let entities = entitiesData
-                                .map((entityData: { id:number|string|undefined }) => entityData.id?repo.get(entityData.id):null)
+                                .map((entityData: { id:number|string|null }) => entityData.id?repo.get(entityData.id):null)
                                 .filter((entity: Entity | null) => entity !== null) as Array<Entity>;
                             mainEntities.push(...entities);
 
@@ -193,7 +193,10 @@ export default class DataLoader extends EventDispatcher {
                     entity._isPersisted = true;
                     this.diffManager.persistOriginal(entity,entityJson);
 
-                    injectedIds.push(entity.getId().toString());
+                    let entityId = entity.getId();
+                    if(null !== entityId) {
+                        injectedIds.push(entityId.toString());
+                    }
                 } catch (e) {
                     console.log(e);
                 }

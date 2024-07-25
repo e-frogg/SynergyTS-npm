@@ -28,7 +28,7 @@ export default class Entity extends EventDispatcher {
         this.id = id;
     }
 
-    public getRepositoryManager(): RepositoryManager | null {
+    public get repositoryManager(): RepositoryManager | null {
         return this._repositoryManager;
     }
 
@@ -42,6 +42,21 @@ export default class Entity extends EventDispatcher {
         }
         //TODO : repository en cache
         return this._repositoryManager.getRepository(theClass).get(id) as T;
+    }
+
+    protected getOneToMany<T extends Entity>(theClass: EntityClass<T>, relationName: string): Array<T> {
+        if(this._repositoryManager === null) {
+            console.error('no repository manager');
+            return [];
+        }
+        if(this.id === null) {
+            console.error('no id');
+            return [];
+        }
+
+        let criteria:{[key:string]:number|string} = {};
+        criteria[relationName] = this.id;
+        return this._repositoryManager.getRepository(theClass).search(criteria).getItems();
     }
 
 

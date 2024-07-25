@@ -96,10 +96,11 @@ export default class EntityManager {
         return Promise.all(entities.map(entity => this.save(entity)));
     }
 
-    search<T extends Entity>(theClass: EntityClass<T>, criteria: Criteria): Promise<{
+    search<T extends Entity>(theClass: EntityClass<T>, criteria?: Criteria): Promise<{
         fullData: Entity[],
         result: Entity[]
     }> {
+        criteria ??= new Criteria();
         console.log( this.getSearchUrl(theClass.name),
             CriteriaConverter.toJson(criteria));
         return this.load(
