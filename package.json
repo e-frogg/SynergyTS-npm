@@ -2,7 +2,7 @@
     "name": "@e-frogg/synergy",
     "description": "Integration of Doctrine for Vue.js in Symfony",
     "license": "MIT",
-    "version": "0.0.1",
+    "version": "0.0.1.1",
     "main": "dist/register_controller.js",
     "types": "dist/register_controller.d.ts",
     "peerDependencies": {
