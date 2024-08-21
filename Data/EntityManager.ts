@@ -34,7 +34,12 @@ export default class EntityManager {
         let entityType = entity.constructor.name;
 
         return new Promise((resolve, reject) => {
-            fetch(this.getEntityUrl(entityType, entity.getId()), {
+            let entityId = entity.getId();
+            if(null === entityId) {
+                reject('Entity has no id');
+                return;
+            }
+            fetch(this.getEntityUrl(entityType, entityId), {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -50,7 +55,6 @@ export default class EntityManager {
     update(entity: Entity, update: {[key: string]:any}): Promise<Entity> {
         let entityType = entity.constructor.name;
         // delete json.id;
-        console.log('update',update);
 
         return new Promise((resolve, reject) => {
             let url = entity._isPersisted
@@ -74,7 +78,7 @@ export default class EntityManager {
                     resolve(entity);
                 })
             }).catch(error => {
-                console.log(error);
+                console.error(error);
                 reject(error);
             })
             console.log(`Saving ${entityType} to the database: ${update}`)
@@ -101,7 +105,7 @@ export default class EntityManager {
         result: Entity[]
     }> {
         criteria ??= new Criteria();
-        console.log( this.getSearchUrl(theClass.name),
+        console.debug( 'search',this.getSearchUrl(theClass.name),
             CriteriaConverter.toJson(criteria));
         return this.load(
             this.getSearchUrl(theClass.name),
