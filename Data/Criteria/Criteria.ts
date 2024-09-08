@@ -11,6 +11,7 @@ export default class Criteria {
     private _associations: CriteriaAssociations = {};
     private _limit: number | null = null
     private _offset: number | null = null
+    private _autoSync: boolean = false;
 
 
     constructor(
@@ -54,6 +55,15 @@ export default class Criteria {
         return this;
     }
 
+    setAutoSync(autoSync: boolean): this {
+        this._autoSync = autoSync;
+        return this;
+    }
+
+    get autoSync(): boolean {
+        return this._autoSync;
+    }
+
     setOffset(offset: number | null): this {
         this._offset = offset;
         return this;
@@ -88,4 +98,9 @@ export default class Criteria {
         return this._offset;
     }
 
+    check() {
+        if(this._autoSync && null !== this._limit) {
+            throw new Error('AutoSync and limit are not compatible');
+        }
+    }
 }

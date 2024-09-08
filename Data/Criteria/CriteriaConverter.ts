@@ -11,6 +11,7 @@ interface JsonCriteria {
     orderBy?: JsonOrderBy;
     offset?: number;
     limit?: number;
+    autoSync?: boolean;
 }
 
 interface JsonAssociations {
@@ -84,6 +85,9 @@ export default class CriteriaConverter {
         }
         if (criteria.limit !== null) {
             json['limit'] = criteria.limit;
+        }
+        if(criteria.autoSync) {
+            json['autoSync'] = true
         }
         if(criteria.associations && Object.keys(criteria.associations).length > 0) {
             json['associations'] = CriteriaConverter.associationToJson(criteria.associations);

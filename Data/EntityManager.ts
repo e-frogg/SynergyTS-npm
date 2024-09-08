@@ -105,6 +105,7 @@ export default class EntityManager {
         result: Entity[]
     }> {
         criteria ??= new Criteria();
+        criteria.check();
         console.debug( 'search',this.getSearchUrl(theClass.name),
             CriteriaConverter.toJson(criteria));
         return this.load(

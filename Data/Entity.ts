@@ -45,6 +45,8 @@ export default class Entity extends EventDispatcher {
     }
 
     protected getOneToMany<T extends Entity>(theClass: EntityClass<T>, relationName: string): Array<T> {
+        //TODO : cache
+        //TODO : reset cache dès qu'une nouvelle entity entre potentiellement en jeu
         if(this._repositoryManager === null) {
             console.error('no repository manager');
             return [];
