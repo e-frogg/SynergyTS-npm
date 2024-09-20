@@ -13,6 +13,7 @@ export default class Entity extends EventDispatcher {
     public _isPersisted: boolean = false;
 
     private _repositoryManager: RepositoryManager|null = null;
+    private static protectedKeys: Array<string> = ['entityName','_repositoryManager','_isPersisted','_properties','_isReactive'];
 
     constructor(
         public id: string | number | null = null
@@ -113,6 +114,10 @@ export default class Entity extends EventDispatcher {
     toJson(deleteNull: boolean = true): { [key: string]: any } {
         let json: { [key: string]: any } = Object.assign({}, this);
         for (let key in json) {
+            if(Entity.protectedKeys.includes(key)) {
+                delete json[key];
+                continue;
+            }
             if(
                 (json[key] === null && deleteNull)
                 || json[key] instanceof Entity
@@ -129,8 +134,12 @@ export default class Entity extends EventDispatcher {
                 let realKey = key.substring(1);
                 if(Reflect.has(this, realKey)) {
                     json[realKey] = Reflect.get(this,realKey);
+                } else {
+                    continue;
                 }
             }
+
+
             // ManyToOne relation
             // if(key.substring(key.length - 2) === 'Id') {
             //     let realKey = key.substring(0, key.length - 2);
