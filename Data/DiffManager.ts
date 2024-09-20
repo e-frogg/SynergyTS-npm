@@ -25,15 +25,20 @@ export default class DiffManager {
 
         let diff: { [key: string]: any } = {};
         for(let key in current) {
+            if(key.startsWith('_')) {
+                continue;
+            }
 
             let c = current[key];
             let o = original[key];
-            if(c instanceof Object) {
-                c = JSON.stringify(Object.assign({}, c));
-            }
-            if(o instanceof Object) {
-                o = JSON.stringify(Object.assign({}, o));
-            }
+            // if(c instanceof Object) {
+            //     console.log('c',key,c)
+                // c = JSON.stringify(Object.assign({}, c));
+            // }
+            // if(o instanceof Object) {
+            //     console.log('o',key,o)
+                // o = JSON.stringify(Object.assign({}, o));
+            // }
             if(c !== o) {
                 // console.log('diff',key,c,o)
                 diff[key] = current[key];
