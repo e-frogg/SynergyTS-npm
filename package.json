@@ -10,7 +10,9 @@
         "typescript": "^5.3.3",
         "vue": "^3.4.27"
     },
-    "devDependencies": {},
+    "devDependencies": {
+        "jest": "*"
+    },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },

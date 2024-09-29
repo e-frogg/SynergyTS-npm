@@ -1,8 +1,5 @@
 import Criteria, {CriteriaAssociations} from "./Criteria";
-import CustomFilter from "./Filter/CustomFilter";
-import Filter from "./Filter/Filter";
-import EqualsFilter from "./Filter/EqualsFilter";
-import EqualsAnyFilter from "./Filter/EqualsAnyFilter";
+import {CustomFilter, Filter, EqualsFilter, EqualsAnyFilter} from "./Filter/Filter";
 import FieldSort from "./Sort/FieldSort";
 
 interface JsonCriteria {
