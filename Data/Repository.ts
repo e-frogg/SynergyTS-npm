@@ -11,7 +11,7 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
 
     public static LIST_CHANGED_EVENT: string = 'listChanged';
 
-    private pk: { [key: string | number]: EntityType } = {};
+    private pk: { [key: string]: EntityType } = {};
 
     // reactive and readonly => vue.js reactivity
     private readonly entities:EntityType[] = reactive([]);
@@ -38,7 +38,7 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         if(null === id) {
             return null;
         }
-        return this.pk[id] ?? null;
+        return this.pk[id.toString()] ?? null;
     }
 
     filter(callback: (entity:EntityType)=>boolean): Repository<EntityType> {
@@ -74,7 +74,7 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         this.entities.splice(index, 1);
         // this.items = this.items.filter((item: EntityType) => item.id !== id)
         // maintainIndex
-        delete this.pk[id];
+        delete this.pk[id.toString()];
 
         // dispatch update event
         dispatchUpdate && this.dispatchListChangedEvent();
@@ -97,7 +97,7 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         this.entities.push(entity);
 
         // maintainIndex
-        this.pk[entityId] = entity;
+        this.pk[entityId.toString()] = entity;
 
         // dispatch update event
         dispatchUpdate && this.dispatchListChangedEvent();
