@@ -117,7 +117,7 @@ export default class EntityManager {
     private getCollectionUrl(entityType: string) {
         return `${this.apiBaseUrl}/${entityType}`;
     }
-    private getEntityUrl(entityType: string, id: string | number) {
+    private getEntityUrl(entityType: string, id: string ) {
         return this.getCollectionUrl(entityType)+`/${id}`;
     }
     private getSearchUrl(entityType: string): string {

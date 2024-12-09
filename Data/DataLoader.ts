@@ -90,7 +90,7 @@ export default class DataLoader extends EventDispatcher {
         return new Promise((resolve, fail) => {
 
             fetch(url, fetchParams).then(response => {
-                return response.json().then(({mercureUrl, data, mainIds}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<number|string>}}) => {
+                return response.json().then(({mercureUrl, data, mainIds}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}}) => {
                     this.inject(data, true)
                     this.initialize();
                     if (mercureUrl) {
@@ -109,7 +109,7 @@ export default class DataLoader extends EventDispatcher {
                                 continue;
                             }
                             let entities = ids
-                                .map((id: string | number) => repo.get(id))
+                                .map((id: string) => repo.get(id))
                                 .filter((entity: Entity | null) => entity !== null) as Array<Entity>;
                             mainEntities.push(...entities);
                         }
@@ -125,7 +125,7 @@ export default class DataLoader extends EventDispatcher {
                                 return acc;
                             }
                             let entities = entitiesData
-                                .map((entityData: { id:number|string|null }) => entityData.id?repo.get(entityData.id):null)
+                                .map((entityData: { id:string|null }) => entityData.id?repo.get(entityData.id):null)
                                 .filter((entity: Entity | null) => entity !== null) as Array<Entity>;
                             mainEntities.push(...entities);
 
@@ -203,11 +203,11 @@ export default class DataLoader extends EventDispatcher {
             })
 
             const addedIds = injectedIds.filter((id: string) => !beforeIds.includes(id));
-            let removedIds: Array<string | number> = [];
+            let removedIds: Array<string> = [];
 
             if (isFullUpdate) {
                 removedIds = beforeIds.filter((id: string) => !injectedIds.includes(id));
-                removedIds.forEach((id: string | number) => {
+                removedIds.forEach((id: string) => {
                     repository.remove(id, false);
                 });
             }

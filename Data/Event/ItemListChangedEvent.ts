@@ -9,7 +9,7 @@ export default class ItemListChangedEvent extends Event {
 
     constructor(
         public readonly repository: Repository<Entity>,
-        public readonly entityIds: Array<string | number>,
+        public readonly entityIds: Array<string>,
     ) {
         super(ItemListChangedEvent.TYPE);
     }

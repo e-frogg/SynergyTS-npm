@@ -14,7 +14,7 @@ export default class Criteria {
 
 
     constructor(
-        private ids: null|Array<number|string> = null,
+        private ids: null|Array<string> = null,
     ) {
     }
     addAssociation(path: string): this {
@@ -59,11 +59,11 @@ export default class Criteria {
         return this;
     }
 
-    getIds(): Array<string|number>|null {
+    getIds(): Array<string>|null {
         return this.ids;
     }
 
-    setIds(ids: null|Array<number|string>) {
+    setIds(ids: null|Array<string>) {
         this.ids = ids;
         return this;
     }

@@ -16,17 +16,17 @@ export default class Entity extends EventDispatcher {
     private static protectedKeys: Array<string> = ['entityName','_repositoryManager','_isPersisted','_properties','_isReactive'];
 
     constructor(
-        public id: string | number | null = null
+        public id: string | null = null
     ) {
         super();
     }
 
-    public getId(): string | number | null  {
+    public getId(): string | null  {
         return this.id;
     }
 
     setId(id: number | string) {
-        this.id = id;
+        this.id = id.toString();
     }
 
     public get repositoryManager(): RepositoryManager | null {
@@ -37,7 +37,7 @@ export default class Entity extends EventDispatcher {
         this._repositoryManager = value;
     }
 
-    protected getRelation<T extends Entity>(theClass: EntityClass<T>, id: string|number|null): T | null {
+    protected getRelation<T extends Entity>(theClass: EntityClass<T>, id: string|null): T | null {
         if(null === id || this._repositoryManager === null) {
             return null;
         }
@@ -55,8 +55,8 @@ export default class Entity extends EventDispatcher {
             return [];
         }
 
-        let criteria:{[key:string]:number|string} = {};
-        criteria[relationName] = this.id;
+        let criteria:{[key:string]:string} = {};
+        criteria[relationName] = this.id.toString();
         return this._repositoryManager.getRepository(theClass).search(criteria).getItems();
     }
 

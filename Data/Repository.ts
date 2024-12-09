@@ -34,10 +34,11 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         return this.entities;
     }
 
-    get(id: string | number | null): EntityType | null {
+    get(id: string | null): EntityType | null {
         if(null === id) {
             return null;
         }
+        // id is converted to string, in case of it is a number
         return this.pk[id.toString()] ?? null;
     }
 
@@ -66,7 +67,7 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         return new Repository(this._entityClass,this.entities.sort(callback))
     }
 
-    remove(id: string | number, dispatchUpdate: boolean = true): void {
+    remove(id: string, dispatchUpdate: boolean = true): void {
         let index = this.entities.findIndex((item: EntityType) => item.id === id)
         if (index === -1) {
             return;
@@ -156,7 +157,7 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
     dispatchListChangedEvent() {
         this.dispatchEvent(new ListChangedEvent(this));
     }
-    dispatchEntityChangedEvent(entityIds: Array<string | number>) {
+    dispatchEntityChangedEvent(entityIds: Array<string>) {
         this.dispatchEvent(new ItemListChangedEvent(this, entityIds));
     }
 
