@@ -158,9 +158,7 @@ export default class DataLoader extends EventDispatcher {
         entityName: string,
         entities: Array<{ [key: string]: any }>
     }>) {
-        console.log('removing',data);
         data.forEach(({entityName, entities}) => {
-            console.log(entityName,entities);
             const repository = this.repositoryManager.getRepositoryByClassName(entityName);
             entities.forEach(entity => {
                 repository.remove(entity.id, false);

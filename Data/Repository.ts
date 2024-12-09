@@ -51,7 +51,6 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
         let items = new Repository(this._entityClass, this.entities.filter(item => this.itemMatch(item, realCriteria)));
 
         for (let sort of realCriteria.sorts) {
-            console.log('sort',sort);
             // items = items.sort(sort.compare);
             items = items.sort(sort.compare.bind(sort));
         }
@@ -68,7 +67,7 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
     }
 
     remove(id: string, dispatchUpdate: boolean = true): void {
-        let index = this.entities.findIndex((item: EntityType) => item.id === id)
+        let index = this.entities.findIndex((item: EntityType) => item.getId() == id)   // == is used to compare string and number :'(
         if (index === -1) {
             return;
         }
