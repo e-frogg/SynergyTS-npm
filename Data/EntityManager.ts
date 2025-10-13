@@ -57,8 +57,9 @@ export default class EntityManager {
         // delete json.id;
 
         return new Promise((resolve, reject) => {
-            let url = entity._isPersisted
-                ? this.getEntityUrl(entityType, entity.getId())
+          let entityId = entity.getId();
+            let url = entity._isPersisted && null !== entityId
+                ? this.getEntityUrl(entityType, entityId)
                 : this.getCollectionUrl(entityType);
             let method = entity._isPersisted ? 'PUT' : 'POST';
             fetch(url, {
