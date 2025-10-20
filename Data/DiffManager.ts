@@ -28,6 +28,9 @@ export default class DiffManager {
             if(key.startsWith('_')) {
                 continue;
             }
+            if(key === 'id') {
+                continue;
+            }
 
             let c = current[key];
             let o = original[key];
