@@ -56,7 +56,7 @@ export default class Entity extends EventDispatcher {
         }
 
         let criteria:{[key:string]:string} = {};
-        criteria[relationName] = this.id.toString();
+        criteria[relationName] = this.id;
         return this._repositoryManager.getRepository(theClass).search(criteria).getItems();
     }
 
