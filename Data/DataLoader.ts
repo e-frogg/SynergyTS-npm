@@ -4,6 +4,12 @@ import DataLoadedEvent from "./Event/DataLoadedEvent";
 import Entity from "./Entity";
 import DiffManager from "./DiffManager";
 
+export type dataLoadResult = {
+  fullData: Entity[],
+  result: Entity[],
+  totalCount: null | number
+};
+
 export default class DataLoader extends EventDispatcher {
 
     private mercureDataLoaderSources: { [key: string]: EventSource } = {};
@@ -74,10 +80,7 @@ export default class DataLoader extends EventDispatcher {
      * @param data
      * @param method
      */
-    async load(url: string, data: object | null = null, method: string = 'GET'): Promise<{
-        fullData: Entity[],
-        result: Entity[]
-    }> {
+    async load(url: string, data: object | null = null, method: string = 'GET'): Promise<dataLoadResult> {
 
         // voir https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
         let fetchParams: { method: string, body: string | null } = {
@@ -90,7 +93,7 @@ export default class DataLoader extends EventDispatcher {
         return new Promise((resolve, fail) => {
 
             fetch(url, fetchParams).then(response => {
-                return response.json().then(({mercureUrl, data, mainIds}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}}) => {
+                return response.json().then(({mercureUrl, data, mainIds, totalCount}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}, totalCount: null|number}) => {
                     this.inject(data, true)
                     this.initialize();
                     if (mercureUrl) {
@@ -144,7 +147,7 @@ export default class DataLoader extends EventDispatcher {
                     //         }
                     //     }
                     // }
-                    resolve({fullData: data, result: mainEntities})
+                    resolve({fullData: data, result: mainEntities, totalCount})
                 }).catch((x) => {
                     fail(x)
                 });

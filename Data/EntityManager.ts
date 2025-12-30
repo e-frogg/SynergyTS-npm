@@ -10,6 +10,8 @@ interface EntityClass<T extends Entity> {
     new(...args: any[]): T;
 }
 
+import dataLoadResult from "./DataLoader";
+
 export default class EntityManager {
 
     private readonly _dataLoader: DataLoader;
@@ -101,10 +103,7 @@ export default class EntityManager {
         return Promise.all(entities.map(entity => this.save(entity)));
     }
 
-    search<T extends Entity>(theClass: EntityClass<T>, criteria?: Criteria): Promise<{
-        fullData: Entity[],
-        result: Entity[]
-    }> {
+    search<T extends Entity>(theClass: EntityClass<T>, criteria?: Criteria): Promise<dataLoadResult> {
         criteria ??= new Criteria();
         console.debug( 'search',this.getSearchUrl(theClass.name),
             CriteriaConverter.toJson(criteria));
@@ -133,7 +132,7 @@ export default class EntityManager {
     }
 
     // forward to dataLoader
-    public load( url: string, data: object | null = null, method: string = 'GET'): Promise<{fullData:Entity[],result:Entity[]}> {
+    public load( url: string, data: object | null = null, method: string = 'GET'): Promise<dataLoadResult> {
         return new Promise((resolve, reject) => {
             this.dataLoader.load(url, data, method).then((event) => {
                 resolve(event);

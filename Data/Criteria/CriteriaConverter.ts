@@ -8,6 +8,7 @@ interface JsonCriteria {
     orderBy?: JsonOrderBy;
     offset?: number;
     limit?: number;
+    totalCount?: boolean;
 }
 
 interface JsonAssociations {
@@ -34,13 +35,13 @@ export default class CriteriaConverter {
             // ex : (name) => name.startsWith('A')
             let typeOfExpected = typeof expected;
             if (typeOfExpected === 'function') {
-                criteria.addFilter(new CustomFilter(field, expected));
+                criteria.withFilter(new CustomFilter(field, expected));
             } else if (typeOfExpected === 'object' && expected instanceof Filter) {
-                criteria.addFilter(expected);
+                criteria.withFilter(expected);
             } else if (typeOfExpected === 'object' && expected instanceof Array) {
-                criteria.addFilter(new EqualsAnyFilter(field, expected));
+                criteria.withFilter(new EqualsAnyFilter(field, expected));
             } else if (typeOfExpected === 'string' || typeOfExpected === 'number') {
-                criteria.addFilter(new EqualsFilter(field, expected));
+                criteria.withFilter(new EqualsFilter(field, expected));
             } else {
                 throw new Error('invalid criteria type : ' + typeOfExpected);
             }
@@ -81,6 +82,9 @@ export default class CriteriaConverter {
         }
         if (criteria.limit !== null) {
             json['limit'] = criteria.limit;
+        }
+        if (criteria.totalCount) {
+            json['totalCount'] = criteria.totalCount;
         }
         if(criteria.associations && Object.keys(criteria.associations).length > 0) {
             json['associations'] = CriteriaConverter.associationToJson(criteria.associations);

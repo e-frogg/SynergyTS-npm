@@ -1,5 +1,5 @@
 import Sort from "./Sort/Sort";
-import Filter from "./Filter/Filter";
+import {Filter} from "./Filter/Filter";
 
 export interface CriteriaAssociations {
     [index: string]: Criteria;
@@ -11,13 +11,14 @@ export default class Criteria {
     private _associations: CriteriaAssociations = {};
     private _limit: number | null = null
     private _offset: number | null = null
+    private _totalCount: boolean = false;
 
 
     constructor(
         private ids: null|Array<string> = null,
     ) {
     }
-    addAssociation(path: string): this {
+    withAssociation(path: string): this {
         this.getAssociation(path)
 
         return this;
@@ -39,22 +40,22 @@ export default class Criteria {
         }
         return association;
     }
-    addFilter(filter: Filter): this {
+    withFilter(filter: Filter): this {
         this._filters.push(filter);
         return this;
     }
 
-    addSort(sort: Sort): this {
+    withSort(sort: Sort): this {
         this._sorts.push(sort);
         return this;
     }
 
-    setLimit(limit: number | null): this {
+    withLimit(limit: number | null): this {
         this._limit = limit;
         return this;
     }
 
-    setOffset(offset: number | null): this {
+    withOffset(offset: number | null): this {
         this._offset = offset;
         return this;
     }
@@ -63,10 +64,16 @@ export default class Criteria {
         return this.ids;
     }
 
-    setIds(ids: null|Array<string>) {
+    withIds(ids: null|Array<string>) {
         this.ids = ids;
         return this;
     }
+
+    withTotalCount(totalCount: boolean): this {
+      this._totalCount = totalCount;
+      return this;
+    }
+
 
     get filters(): Array<Filter> {
         return this._filters;
@@ -86,6 +93,10 @@ export default class Criteria {
 
     get offset(): number | null {
         return this._offset;
+    }
+
+    get totalCount(): boolean {
+      return this._totalCount;
     }
 
 }
