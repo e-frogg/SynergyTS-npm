@@ -8,6 +8,7 @@ interface EntityClass<T extends Entity> {
 }
 
 export default class Entity extends EventDispatcher {
+
     protected static _properties: { [key: string]: string } = {};
     private static _isReactive: boolean = true;
     public _isPersisted: boolean = false;
@@ -174,4 +175,23 @@ export default class Entity extends EventDispatcher {
         return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
 
     }
+
+  has(name: string): boolean {
+    return name in this;
+  }
+
+  get<K extends keyof this>(name: K): this[K] {
+    if (!(name in this)) {
+      throw new Error(`Property ${String(name)} does not exist in ${this.constructor.name}`);
+    }
+    return this[name];
+  }
+
+  set<K extends keyof this>(name: K, value: this[K]) {
+    if (!(name in this)) {
+      throw new Error(`Property ${String(name)} does not exist in ${this.constructor.name}`);
+    }
+    this[name] = value;
+  }
+
 }
