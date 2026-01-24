@@ -2,6 +2,8 @@ import {reactive} from "vue";
 import EventDispatcher from "./EventDispatcher";
 import EntityChangedEvent from "./Event/EntityChangedEvent";
 import RepositoryManager from "./RepositoryManager";
+import Repository from "@efrogg/synergy/Data/Repository";
+import ListChangedEvent from "@efrogg/synergy/Data/Event/ListChangedEvent";
 
 interface EntityClass<T extends Entity> {
     new(...args: any[]): T;
@@ -36,6 +38,30 @@ export default class Entity extends EventDispatcher {
 
     set repositoryManager(value: RepositoryManager | null) {
         this._repositoryManager = value;
+    }
+
+    public initialize() {
+      //TODO : ici c'est très bourrin. On ajoute un event sur chaque entity, ce qui fera a terme des milliers de listeners.
+      // l'optimisation serait de faire un listener global par repository, et de dispatcher les reset en fonction de l'entity modifiée.
+      // mais pour le moment, n'ayant pas de Repository, il faudrait gérer ça autrement, ç un autre niveau... mais pas dans l'entity :
+      // dans le repository ou dans le EntityManager...
+      // ou alors le Repository il "dévouvre" les triggers en appelant une méthode statique de l'entity. ça semble le mieux !
+
+      // handle cache, relations, etc...
+      for (const resetTrigger of this.getResetTriggers()) {
+        this._repositoryManager?.getRepositoryByClassName(resetTrigger).addEventListener(ListChangedEvent.TYPE, (event) => {
+          this.reset(resetTrigger);
+        });
+      }
+      // to be overridden
+    }
+
+    public getResetTriggers(): Array<string> {
+        return [];
+    }
+
+    public reset(entityClass: string) {
+        // to be overridden
     }
 
     protected getRelation<T extends Entity>(theClass: EntityClass<T>, id: string|null): T | null {

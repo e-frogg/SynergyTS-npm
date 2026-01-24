@@ -192,6 +192,7 @@ export default class DataLoader extends EventDispatcher {
                     const {entity, action} = repository.addFromJson(entityJson, true, false);
                     entity.repositoryManager = this.repositoryManager;
                     entity._isPersisted = true;
+                    entity.initialize();
                     this.diffManager.persistOriginal(entity,entityJson);
 
                     let entityId = entity.getId();

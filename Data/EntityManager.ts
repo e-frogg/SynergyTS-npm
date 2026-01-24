@@ -81,10 +81,8 @@ export default class EntityManager {
                     resolve(entity);
                 })
             }).catch(error => {
-                console.error(error);
                 reject(error);
             })
-            console.log(`Saving ${entityType} to the database: ${update}`)
 
         });
         // return new Promise()
@@ -105,8 +103,6 @@ export default class EntityManager {
 
     search<T extends Entity>(theClass: EntityClass<T>, criteria?: Criteria): Promise<dataLoadResult> {
         criteria ??= new Criteria();
-        console.debug( 'search',this.getSearchUrl(theClass.name),
-            CriteriaConverter.toJson(criteria));
         return this.load(
             this.getSearchUrl(theClass.name),
             CriteriaConverter.toJson(criteria),
