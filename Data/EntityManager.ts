@@ -10,7 +10,7 @@ interface EntityClass<T extends Entity> {
     new(...args: any[]): T;
 }
 
-import dataLoadResult from "./DataLoader";
+import {dataLoadResult} from "./DataLoader";
 
 export default class EntityManager {
 

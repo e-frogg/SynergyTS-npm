@@ -1,5 +1,5 @@
 import Criteria, {CriteriaAssociations} from "./Criteria";
-import {CustomFilter, Filter, EqualsFilter, EqualsAnyFilter} from "./Filter/Filter";
+import {CustomFilter, Filter, EqualsFilter, EqualsAnyFilter, ContainsFilter} from "./Filter/Filter";
 import FieldSort from "./Sort/FieldSort";
 
 interface JsonCriteria {
@@ -8,6 +8,7 @@ interface JsonCriteria {
     orderBy?: JsonOrderBy;
     offset?: number;
     limit?: number;
+    ids?: Array<string | number>;
     totalCount?: boolean;
 }
 
@@ -56,6 +57,11 @@ export default class CriteriaConverter {
                 filters[filter.field] = filter.value;
             } else if (filter instanceof EqualsAnyFilter) {
                 filters[filter.field] = filter.values
+            } else if (filter instanceof ContainsFilter) {
+                filters[filter.field] = {
+                  'type': 'contains',
+                  'value': filter.value
+                }
             } else {
                 throw new Error('could not convert Filter to json ' + filter.constructor.name)
             }
@@ -70,6 +76,11 @@ export default class CriteriaConverter {
             }
         }
         let json: JsonCriteria = {};
+
+        let ids = criteria.getIds();
+        if(ids && ids.length > 0) {
+          json['ids'] = ids;
+        }
 
         if (Object.keys(filters).length > 0) {
             json['filters'] = filters;
