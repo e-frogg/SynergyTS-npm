@@ -48,7 +48,7 @@ export default class Entity extends EventDispatcher {
       // ou alors le Repository il "dévouvre" les triggers en appelant une méthode statique de l'entity. ça semble le mieux !
 
       // handle cache, relations, etc...
-      for (const resetTrigger of this.getResetTriggers()) {
+      for (const resetTrigger of (this.constructor as typeof Entity).getResetTriggers()) {
         this._repositoryManager?.getRepositoryByClassName(resetTrigger).addEventListener(ListChangedEvent.TYPE, (event) => {
           this.reset(resetTrigger);
         });
