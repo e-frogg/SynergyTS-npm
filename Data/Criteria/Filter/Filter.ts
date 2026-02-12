@@ -54,3 +54,23 @@ export  class ContainsFilter extends Filter {
         return value.toString().toLowerCase().includes(this.value.toString());
     }
 }
+
+export class OrFilter extends Filter {
+    constructor(public readonly filters: Filter[]) {
+        super('or');
+    }
+
+    match(value: any): boolean {
+        return this.filters.some((filter) => filter.match(value));
+    }
+}
+
+export class AndFilter extends Filter {
+    constructor(public readonly filters: Filter[]) {
+        super('and');
+    }
+
+    match(value: any): boolean {
+        return this.filters.every((filter) => filter.match(value));
+    }
+}

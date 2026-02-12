@@ -1,5 +1,5 @@
 import Criteria, {CriteriaAssociations} from "./Criteria";
-import {CustomFilter, Filter, EqualsFilter, EqualsAnyFilter, ContainsFilter} from "./Filter/Filter";
+import {CustomFilter, Filter, EqualsFilter, EqualsAnyFilter, ContainsFilter, OrFilter, AndFilter} from "./Filter/Filter";
 import FieldSort from "./Sort/FieldSort";
 
 interface JsonCriteria {
@@ -53,18 +53,7 @@ export default class CriteriaConverter {
     static toJson(criteria: Criteria): {} {
         let filters: JsonFilters = {};
         for (const filter of criteria.filters) {
-            if (filter instanceof EqualsFilter) {
-                filters[filter.field] = filter.value;
-            } else if (filter instanceof EqualsAnyFilter) {
-                filters[filter.field] = filter.values
-            } else if (filter instanceof ContainsFilter) {
-                filters[filter.field] = {
-                  'type': 'contains',
-                  'value': filter.value
-                }
-            } else {
-                throw new Error('could not convert Filter to json ' + filter.constructor.name)
-            }
+            Object.assign(filters, this.filterToJson(filter));
         }
 
         let orderBy: JsonOrderBy = {}
@@ -101,6 +90,34 @@ export default class CriteriaConverter {
             json['associations'] = CriteriaConverter.associationToJson(criteria.associations);
         }
         return json;
+    }
+
+    private static filterToJson(filter: Filter): JsonFilters {
+        if (filter instanceof EqualsFilter) {
+            return {[filter.field]: filter.value};
+        }
+        if (filter instanceof EqualsAnyFilter) {
+            return {[filter.field]: filter.values};
+        }
+        if (filter instanceof OrFilter) {
+            return {
+                'or': filter.filters.map((innerFilter: Filter) => this.filterToJson(innerFilter))
+            };
+        }
+        if (filter instanceof AndFilter) {
+            return {
+                'and': filter.filters.map((innerFilter: Filter) => this.filterToJson(innerFilter))
+            };
+        }
+        if (filter instanceof ContainsFilter) {
+            return {
+                [filter.field]: {
+                    'type': 'contains',
+                    'value': filter.value
+                }
+            };
+        }
+        throw new Error('could not convert Filter to json ' + filter.constructor.name);
     }
 
     static associationToJson(associations: CriteriaAssociations): any {

@@ -56,11 +56,11 @@ export default class Entity extends EventDispatcher {
       // to be overridden
     }
 
-    public getResetTriggers(): Array<string> {
+    public static getResetTriggers(): Array<string> {
         return [];
     }
 
-    public reset(entityClass: string) {
+    public reset(causeEntityClass: string) {
         // to be overridden
     }
 

@@ -79,8 +79,9 @@ export default class DataLoader extends EventDispatcher {
      * @param url
      * @param data
      * @param method
+     * @param isFullUpdate if true, entities not present in the response will be removed from the repositories
      */
-    async load(url: string, data: object | null = null, method: string = 'GET'): Promise<dataLoadResult> {
+    async load(url: string, data: object | null = null, method: string = 'GET', isFullUpdate: boolean = false ): Promise<dataLoadResult> {
 
         // voir https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
         let fetchParams: { method: string, body: string | null } = {
@@ -94,7 +95,7 @@ export default class DataLoader extends EventDispatcher {
 
             fetch(url, fetchParams).then(response => {
                 return response.json().then(({mercureUrl, data, mainIds, totalCount}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}, totalCount: null|number}) => {
-                    this.inject(data, true)
+                    this.inject(data, isFullUpdate)
                     this.initialize();
                     if (mercureUrl) {
                         this.subscribeToMercure(mercureUrl);
