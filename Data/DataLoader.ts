@@ -14,6 +14,12 @@ export default class DataLoader extends EventDispatcher {
 
     private mercureDataLoaderSources: { [key: string]: EventSource } = {};
 
+    private autoResetRepositoriesOnLoad: boolean = true;
+
+    public setAutoResetRepositoriesOnLoad(autoResetRepositoriesOnLoad: boolean) {
+        this.autoResetRepositoriesOnLoad = autoResetRepositoriesOnLoad;
+    }
+
     constructor(
         private repositoryManager: RepositoryManager,
         private diffManager: DiffManager,
@@ -78,9 +84,9 @@ export default class DataLoader extends EventDispatcher {
      * @param url
      * @param data
      * @param method
-     * @param isFullUpdate if true, entities not present in the response will be removed from the repositories
+     * @param forceFullUpdate if true, entities not present in the response will be removed from the repositories
      */
-    async load(url: string, data: object | null = null, method: string = 'GET', isFullUpdate: boolean = false ): Promise<dataLoadResult> {
+    async load(url: string, data: object | null = null, method: string = 'GET', forceFullUpdate: boolean|null = null ): Promise<dataLoadResult> {
 
         // voir https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
         let fetchParams: { method: string, body: string | null } = {
@@ -94,7 +100,7 @@ export default class DataLoader extends EventDispatcher {
 
             fetch(url, fetchParams).then(response => {
                 return response.json().then(({mercureUrl, data, mainIds, totalCount}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}, totalCount: null|number}) => {
-                    this.inject(data, isFullUpdate)
+                    this.inject(data, forceFullUpdate ?? this.autoResetRepositoriesOnLoad);
                     this.initialize();
                     if (mercureUrl) {
                         this.subscribeToMercure(mercureUrl);

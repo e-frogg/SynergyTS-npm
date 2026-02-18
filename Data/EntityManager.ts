@@ -136,10 +136,10 @@ export default class EntityManager {
     }
 
     // forward to dataLoader
-    public load( url: string, data: object | null = null, method?: string, isFullUpdate: boolean = false ): Promise<dataLoadResult> {
+    public load( url: string, data: object | null = null, method?: string, forceFullUpdate: boolean|null = null ): Promise<dataLoadResult> {
         method ??= (null === data ? 'GET' : 'POST');
         return new Promise((resolve, reject) => {
-            this.dataLoader.load(url, data, method, isFullUpdate).then((event) => {
+            this.dataLoader.load(url, data, method, forceFullUpdate).then((event) => {
                 resolve(event);
             }).catch(error => {
                 console.log(error);
