@@ -41,7 +41,6 @@ export default class DataLoader extends EventDispatcher {
             return;
         }
 
-        console.warn('subscribing to ' + mercureUrl)
         let mercureSource = new EventSource(mercureUrl, {
             withCredentials: true
         });
