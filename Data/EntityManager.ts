@@ -71,6 +71,7 @@ export default class EntityManager {
                 ? this.getEntityUrl(entityType, entityId)
                 : this.getCollectionUrl(entityType);
             let method = entity._isPersisted ? 'PUT' : 'POST';
+          console.log("saaave !! ",update);
             fetch(url, {
                 method: method,
                 headers: {
@@ -94,9 +95,9 @@ export default class EntityManager {
         });
         // return new Promise()
     }
-    public save(entity: Entity): Promise<Entity> {
+    public save(entity: Entity, fields?: string[]): Promise<Entity> {
         // save entity to the database
-        let diff = this._diffManager.computeDiff(entity);
+        let diff = this._diffManager.computeDiff(entity, fields);
         if(Object.keys(diff).length === 0) {
             return new Promise((resolve, reject) => {
                 resolve(entity);

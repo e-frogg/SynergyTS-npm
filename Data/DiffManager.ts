@@ -8,23 +8,26 @@ export default class DiffManager {
         this.original[this.getCacheKey(entity)] = entity.toJson();
     }
 
-    public computeDiff(entity: Entity): { [key: string]: any } {
+    public computeDiff(entity: Entity, fields?: string[]): { [key: string]: any } {
         const original = this.original[this.getCacheKey(entity)];
         const current = entity.toJson();
-        return this.diff(original,current);
+        return this.diff(original,current,fields);
     }
 
     private getCacheKey(entity: Entity) {
         return entity.constructor.name+"-"+entity.getId();
     }
 
-    private diff(original: { [key: string]: any },current: { [key: string]: any }): { [key: string]: any } {
+    private diff(original: { [key: string]: any },current: { [key: string]: any }, fields?: string[]): { [key: string]: any } {
         if(!original) {
             return current;
         }
 
         let diff: { [key: string]: any } = {};
         for(let key in current) {
+            if(fields && !fields.includes(key)) {
+                continue;
+            }
             if(key.startsWith('_')) {
                 continue;
             }
