@@ -9,8 +9,9 @@ export abstract class Filter {
     }
 
     abstract match(value: any): boolean;
-}
 
+  abstract toJson(): any;
+}
 
 export class EqualsFilter extends Filter {
     constructor(field: string, public readonly value: any) {
@@ -20,6 +21,10 @@ export class EqualsFilter extends Filter {
     match(value: any): boolean {
         return value === this.value;
     }
+
+  toJson(): any {
+    return {[this.field]: this.value};
+  }
 }
 
 export class EqualsAnyFilter extends Filter {
@@ -30,17 +35,28 @@ export class EqualsAnyFilter extends Filter {
     match(value: any): boolean {
         return this.values.includes(value);
     }
+
+  toJson(): any {
+    return {[this.field]: this.values};
+  }
 }
 
 
 export class CustomFilter extends Filter {
-    constructor(field: string, private callback: Function) {
+  constructor(field: string, private callback?: Function) {
         super(field);
     }
 
     match(value: any): boolean {
+      if (null == this.callback) {
+        throw new Error('CustomFilter requires a callback function');
+      }
         return this.callback(value);
     }
+
+  toJson(): any {
+    throw new Error('CustomFilter cannot be converted to json');
+  }
 }
 
 
@@ -53,6 +69,16 @@ export  class ContainsFilter extends Filter {
     match(value: any): boolean {
         return value.toString().toLowerCase().includes(this.value.toString());
     }
+
+  toJson(): any {
+    return {
+      [this.field]: {
+        'type': 'contains',
+        'value': this.value
+      }
+    };
+  }
+
 }
 
 export class OrFilter extends Filter {
@@ -63,6 +89,12 @@ export class OrFilter extends Filter {
     match(value: any): boolean {
         return this.filters.some((filter) => filter.match(value));
     }
+
+  toJson(): any {
+    return {
+      'or': this.filters.map((innerFilter: Filter) => innerFilter.toJson())
+    }
+  }
 }
 
 export class AndFilter extends Filter {
@@ -73,4 +105,10 @@ export class AndFilter extends Filter {
     match(value: any): boolean {
         return this.filters.every((filter) => filter.match(value));
     }
+
+  toJson(): any {
+    return {
+      'and': this.filters.map((innerFilter: Filter) => innerFilter.toJson())
+    }
+  }
 }

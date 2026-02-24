@@ -53,7 +53,7 @@ export default class CriteriaConverter {
     static toJson(criteria: Criteria): {} {
         let filters: JsonFilters = {};
         for (const filter of criteria.filters) {
-            Object.assign(filters, this.filterToJson(filter));
+            Object.assign(filters, filter.toJson());
         }
 
         let orderBy: JsonOrderBy = {}
@@ -90,34 +90,6 @@ export default class CriteriaConverter {
             json['associations'] = CriteriaConverter.associationToJson(criteria.associations);
         }
         return json;
-    }
-
-    private static filterToJson(filter: Filter): JsonFilters {
-        if (filter instanceof EqualsFilter) {
-            return {[filter.field]: filter.value};
-        }
-        if (filter instanceof EqualsAnyFilter) {
-            return {[filter.field]: filter.values};
-        }
-        if (filter instanceof OrFilter) {
-            return {
-                'or': filter.filters.map((innerFilter: Filter) => this.filterToJson(innerFilter))
-            };
-        }
-        if (filter instanceof AndFilter) {
-            return {
-                'and': filter.filters.map((innerFilter: Filter) => this.filterToJson(innerFilter))
-            };
-        }
-        if (filter instanceof ContainsFilter) {
-            return {
-                [filter.field]: {
-                    'type': 'contains',
-                    'value': filter.value
-                }
-            };
-        }
-        throw new Error('could not convert Filter to json ' + filter.constructor.name);
     }
 
     static associationToJson(associations: CriteriaAssociations): any {
