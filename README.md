@@ -1,10 +1,18 @@
 # @efrogg/synergy
 
-Lib TypeScript/Vue pour manipuler des entités Synergy côté front:
-- chargement/édition d'entités (`EntityManager`, `RepositoryManager`),
-- recherche via critères (`Criteria`),
-- synchro temps réel via Mercure (`DataLoader`),
-- session Mercure multi-sources pour flux ciblés (`MercureSessionClient`, `MercureSessionRegistry`).
+`@efrogg/synergy` est une librairie front TypeScript/Vue pour manipuler un graphe d'entites metier synchronise avec un backend Synergy.
+
+Exemples utilises dans cette doc: `Block`, `Post`, `Tag`, `Author`.
+
+Synergy, dans les grandes lignes, est une approche full-stack de synchronisation d'entites: un backend expose des endpoints CRUD/recherche et publie des mises a jour Mercure, tandis que cette lib npm maintient un cache front coherent (repositories) et applique ces mises a jour en temps reel.
+
+## Ce que la lib fait pour vous
+
+- Charger des entites depuis une API HTTP.
+- Les stocker localement dans des repositories reactifs.
+- Mettre a jour/supprimer des entites via API.
+- Recevoir des updates temps reel via Mercure.
+- Cibler les updates avec des sessions (utile sur listes longues).
 
 ## Installation
 
@@ -12,61 +20,63 @@ Lib TypeScript/Vue pour manipuler des entités Synergy côté front:
 npm install @efrogg/synergy
 ```
 
-## Vue d'ensemble
+## Quickstart (5 minutes)
 
-Le coeur de la lib est dans `Data/`:
-- `EntityManager`: API CRUD/recherche + orchestration des repositories,
-- `DataLoader`: injection des payloads API et gestion des abonnements Mercure,
-- `Repository*`: stockage local par type d'entité,
-- `Criteria/*`: construction des requêtes de recherche,
-- `MercureSessionClient` et `MercureSessionRegistry`: gestion des topics Mercure de session.
+### 1) Declarer vos classes d'entites
 
-Architecture rapide:
-- `DataLoader` reste le point d'entrée de la synchro SSE,
-- `MercureSessionClient` gère le contrat HTTP des sessions backend,
-- `MercureSessionRegistry` agrège les IDs visibles (plusieurs sources front) et maintient une session unique.
+```ts
+import Entity from "@efrogg/synergy/Data/Entity";
 
-## Démarrage rapide
+export class Author extends Entity {
+  name: string = "";
+}
+
+export class Post extends Entity {
+  title: string = "";
+  authorId: string | null = null;
+}
+```
+
+### 2) Creer un `EntityManager`
 
 ```ts
 import EntityManager from "@efrogg/synergy/Data/EntityManager";
 import RepositoryManager from "@efrogg/synergy/Data/RepositoryManager";
-import Project from "@/Data/Entity/Project";
+import Criteria from "@efrogg/synergy/Data/Criteria/Criteria";
+import { Author, Post } from "./domain";
 
-const entityManager = new EntityManager(new RepositoryManager([Project]));
-
-const projects = await entityManager.load('/synergy/data/initial-data');
-console.log(projects.result);
+const manager = new EntityManager(
+  new RepositoryManager([Author, Post]),
+  "/synergy/entity"
+);
 ```
 
-## Session Mercure (focus actuel)
-
-La doc technique détaillée de la session est ici:
-- [docs/session.md](docs/session.md)
-
-Exemple minimal:
+### 3) Charger les donnees
 
 ```ts
-import MercureSessionClient from "@efrogg/synergy/Data/MercureSessionClient";
-import MercureSessionRegistry from "@efrogg/synergy/Data/MercureSessionRegistry";
-
-const sessionClient = new MercureSessionClient();
-const sessionRegistry = new MercureSessionRegistry(
-  entityManager.dataLoader,
-  sessionClient,
-  'Content'
-);
-
-await sessionRegistry.setSource('content-list', [1, 2, 3]);
-await sessionRegistry.setSource('content-detail', [42]);
+await manager.search(Post, new Criteria().withLimit(50));
 ```
 
-## Documentation
+### 4) Lire depuis les repositories
 
-- Index technique: [docs/index.md](docs/index.md)
-- Session Mercure: [docs/session.md](docs/session.md)
+```ts
+const posts = manager.getRepository(Post).getItems();
+console.log(posts);
+```
 
-## Statut
+### 5) Modifier et sauvegarder
 
-Cette documentation est une base initiale.
-La couverture complète des autres composants de la lib sera ajoutée progressivement.
+```ts
+const first = manager.getRepository(Post).first();
+if (first) {
+  first.title = "Nouveau titre";
+  await manager.save(first, ["title"]);
+}
+```
+
+## Ou aller ensuite
+
+- Parcours de doc: [docs/index.md](docs/index.md)
+- API et outils: [docs/api-tools.md](docs/api-tools.md)
+- Sessions Mercure: [docs/session.md](docs/session.md)
+- Recettes (cas d'usage): [docs/use-cases.md](docs/use-cases.md)

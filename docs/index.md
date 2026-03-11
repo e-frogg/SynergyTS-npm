@@ -1,48 +1,43 @@
-# Documentation technique Synergy npm
+# Documentation `@efrogg/synergy`
 
-Cette section décrit le fonctionnement interne de `@efrogg/synergy`.
+Cette documentation est organisee pour une lecture progressive.
 
-## Structure
+Domaine d'exemple unique: `Block`, `Post`, `Tag`, `Author`.
 
-- `README.md`: vue d'ensemble de la lib et quickstart
-- `docs/index.md`: index technique (ce document)
-- `docs/session.md`: documentation détaillée de la session Mercure
+Synergy, en resume, combine un backend qui gere les entites (CRUD/recherche + diffusion Mercure) et un frontend qui maintient un modele local reactive synchronise en continu.
 
-## Ce qui est documenté maintenant
+## Commencer ici
 
-- Vue d'ensemble de la lib (README)
-- Session Mercure:
-  - `MercureSessionClient`
-  - `MercureSessionRegistry`
+1. Lire le [README](../README.md) pour un premier chargement de donnees.
+2. Lire [api-tools.md](api-tools.md) section "Modele mental" puis "Premier cycle complet".
+3. Lire [session.md](session.md) si vous avez des listes longues/temps reel cible.
+4. Lire [use-cases.md](use-cases.md) pour des recettes concretes.
 
-Voir: [session.md](session.md)
+## Selon votre besoin
 
-## Carte rapide des composants
+- "Je veux juste charger, afficher, sauvegarder":
+  - [README](../README.md)
+  - [api-tools.md](api-tools.md)
 
-- `Data/EntityManager.ts`: façade principale pour charger/rechercher/sauver/supprimer
-- `Data/DataLoader.ts`: injection des payloads et abonnement SSE Mercure
-- `Data/Repository*.ts`: cache local d'entités + événements de changement
-- `Data/Criteria/*`: filtres, tri, pagination et conversion JSON
-- `Data/MercureSessionClient.ts`: API HTTP session Mercure + switch de flux
-- `Data/MercureSessionRegistry.ts`: agrégation multi-sources et synchro session
+- "Je dois faire du live sur gros volume":
+  - [session.md](session.md)
+  - [use-cases.md](use-cases.md#2-liste-longue-session-mercure-ciblee)
 
-## Convention actuelle (session)
+- "Je dois isoler plusieurs contextes applicatifs":
+  - [use-cases.md](use-cases.md#3-cas-complexe-plusieurs-entitymanager-independants)
 
-- Une session cible une entité principale (ex: `Content`)
-- Plusieurs sources peuvent alimenter la session (ex: `content-list`, `content-detail`)
-- La session backend est maintenue tant qu'au moins une source a des IDs
-- Quand toutes les sources sont vides, la session est fermée
+## Carte rapide des briques
 
-## Contrat d'intégration recommandé
+- `EntityManager`: facade principale.
+- `DataLoader`: ingestion des payloads + SSE Mercure.
+- `RepositoryManager`/`Repository`: cache local reactive.
+- `Criteria`/`CriteriaConverter`: recherche et conversion JSON.
+- `MercureSessionClient`/`MercureSessionRegistry`: session ciblee.
 
-- Centraliser un registry par domaine métier (ex: session produit `Content`) dans un service partagé (`ConfigContainer`).
-- Alimenter ce registry depuis la navigation (liste, détail, widgets, etc.).
-- Utiliser des `sourceKey` stables et explicites (`content-list`, `content-detail`).
+## Contrat backend attendu
 
-## Extension prévue
+Par defaut, la lib parle avec:
+- `/synergy/entity/*` pour CRUD/recherche.
+- `/synergy/entity/mercure-session` pour sessions Mercure.
 
-Cette doc sera étendue ensuite pour couvrir:
-- `EntityManager` (CRUD/recherche) en détail
-- `DataLoader` (pipeline d'injection et événements)
-- `Criteria` avancés et filtres custom
-- bonnes pratiques d'intégration Vue/Pinia/router
+Ces URLs sont configurables dans les constructeurs.
