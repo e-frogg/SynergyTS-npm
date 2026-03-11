@@ -5,6 +5,7 @@ import Repository from "./Repository";
 import DiffManager from "./DiffManager";
 import Criteria from "./Criteria/Criteria";
 import CriteriaConverter from "./Criteria/CriteriaConverter";
+import AuthErrorEvent from "./Event/AuthErrorEvent";
 
 interface EntityClass<T extends Entity> {
     new(...args: any[]): T;
@@ -54,6 +55,10 @@ export default class EntityManager {
                     'Content-Type': 'application/json'
                 },
             }).then(response => {
+                if (this._dataLoader.checkAndDispatchAuthError(response)) {
+                    reject(new AuthErrorEvent(response));
+                    return;
+                }
                 resolve(entity);
             }).catch(error => {
                 console.log(error);
@@ -79,8 +84,11 @@ export default class EntityManager {
                 },
                 body: JSON.stringify(update)
             }).then(response => {
-                response.json().then
-                (data => {
+                if (this._dataLoader.checkAndDispatchAuthError(response)) {
+                    reject(new AuthErrorEvent(response));
+                    return;
+                }
+                response.json().then(data => {
                     let id = data.id;
                     //TODO : mettre l'entity dans le repository, avant ou après,
                     // mais il faudrait que l'entity qui est dans le repository

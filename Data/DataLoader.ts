@@ -1,6 +1,7 @@
 import RepositoryManager from "./RepositoryManager";
 import EventDispatcher from "./EventDispatcher";
 import DataLoadedEvent from "./Event/DataLoadedEvent";
+import AuthErrorEvent from "./Event/AuthErrorEvent";
 import Entity from "./Entity";
 import DiffManager from "./DiffManager";
 
@@ -25,6 +26,21 @@ export default class DataLoader extends EventDispatcher {
         private diffManager: DiffManager,
     ) {
         super();
+    }
+
+    /**
+     * Checks if the response is an auth error (401/403 or Symfony redirect to /login).
+     * If so, dispatches an AuthErrorEvent and returns true.
+     */
+    public checkAndDispatchAuthError(response: Response): boolean {
+        const isAuthError =
+            response.status === 401 ||
+            response.status === 403 ||
+            (response.redirected && response.url.includes('/login'));
+        if (isAuthError) {
+            this.dispatchEvent(new AuthErrorEvent(response));
+        }
+        return isAuthError;
     }
 
     unsubscribeToMercure(mercureUrl: string | null = null) {
@@ -99,6 +115,10 @@ export default class DataLoader extends EventDispatcher {
         return new Promise((resolve, fail) => {
 
             fetch(url, fetchParams).then(response => {
+                if (this.checkAndDispatchAuthError(response)) {
+                    fail(new AuthErrorEvent(response));
+                    return;
+                }
                 return response.json().then(({mercureUrl, data, mainIds, totalCount}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}, totalCount: null|number}) => {
                     this.inject(data, forceFullUpdate ?? this.autoResetRepositoriesOnLoad);
                     this.initialize();
