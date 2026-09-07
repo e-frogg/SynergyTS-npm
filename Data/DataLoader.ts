@@ -1,6 +1,7 @@
 import RepositoryManager from "./RepositoryManager";
 import EventDispatcher from "./EventDispatcher";
 import DataLoadedEvent from "./Event/DataLoadedEvent";
+import AuthErrorEvent from "./Event/AuthErrorEvent";
 import Entity from "./Entity";
 import DiffManager from "./DiffManager";
 
@@ -10,15 +11,46 @@ export type dataLoadResult = {
   totalCount: null | number
 };
 
+export class DataLoaderHttpError extends Error {
+    constructor(
+        public readonly status: number,
+        public readonly payload: unknown,
+    ) {
+        super(`Request failed with status ${status}`);
+        this.name = 'DataLoaderHttpError';
+    }
+}
+
 export default class DataLoader extends EventDispatcher {
 
     private mercureDataLoaderSources: { [key: string]: EventSource } = {};
+
+    private autoResetRepositoriesOnLoad: boolean = true;
+
+    public setAutoResetRepositoriesOnLoad(autoResetRepositoriesOnLoad: boolean) {
+        this.autoResetRepositoriesOnLoad = autoResetRepositoriesOnLoad;
+    }
 
     constructor(
         private repositoryManager: RepositoryManager,
         private diffManager: DiffManager,
     ) {
         super();
+    }
+
+    /**
+     * Checks if the response is an auth error (401/403 or Symfony redirect to /login).
+     * If so, dispatches an AuthErrorEvent and returns true.
+     */
+    public checkAndDispatchAuthError(response: Response): boolean {
+        const isAuthError =
+            response.status === 401 ||
+            response.status === 403 ||
+            (response.redirected && response.url.includes('/login'));
+        if (isAuthError) {
+            this.dispatchEvent(new AuthErrorEvent(response));
+        }
+        return isAuthError;
     }
 
     unsubscribeToMercure(mercureUrl: string | null = null) {
@@ -41,7 +73,6 @@ export default class DataLoader extends EventDispatcher {
             return;
         }
 
-        console.warn('subscribing to ' + mercureUrl)
         let mercureSource = new EventSource(mercureUrl, {
             withCredentials: true
         });
@@ -79,8 +110,9 @@ export default class DataLoader extends EventDispatcher {
      * @param url
      * @param data
      * @param method
+     * @param forceFullUpdate if true, entities not present in the response will be removed from the repositories
      */
-    async load(url: string, data: object | null = null, method: string = 'GET'): Promise<dataLoadResult> {
+    async load(url: string, data: object | null = null, method: string = 'GET', forceFullUpdate: boolean|null = null ): Promise<dataLoadResult> {
 
         // voir https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
         let fetchParams: { method: string, body: string | null } = {
@@ -93,8 +125,17 @@ export default class DataLoader extends EventDispatcher {
         return new Promise((resolve, fail) => {
 
             fetch(url, fetchParams).then(response => {
-                return response.json().then(({mercureUrl, data, mainIds, totalCount}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}, totalCount: null|number}) => {
-                    this.inject(data, true)
+                if (this.checkAndDispatchAuthError(response)) {
+                    fail(new AuthErrorEvent(response));
+                    return;
+                }
+                return response.json().then((payload: {mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}, totalCount: null|number}) => {
+                    if (!response.ok) {
+                        fail(new DataLoaderHttpError(response.status, payload));
+                        return;
+                    }
+                    const {mercureUrl, data, mainIds, totalCount} = payload;
+                    this.inject(data, forceFullUpdate ?? this.autoResetRepositoriesOnLoad);
                     this.initialize();
                     if (mercureUrl) {
                         this.subscribeToMercure(mercureUrl);
@@ -192,6 +233,7 @@ export default class DataLoader extends EventDispatcher {
                     const {entity, action} = repository.addFromJson(entityJson, true, false);
                     entity.repositoryManager = this.repositoryManager;
                     entity._isPersisted = true;
+                    entity.initialize();
                     this.diffManager.persistOriginal(entity,entityJson);
 
                     let entityId = entity.getId();

@@ -155,6 +155,13 @@ export default class Repository<EntityType extends Entity> extends EventDispatch
 
     dispatchListChangedEvent() {
         this.dispatchEvent(new ListChangedEvent(this));
+
+        // dispatch the reset to each entity if needed
+        for (const resetTriggers of this._entityClass.getResetTriggers()) {
+          this.entities.forEach((item: EntityType) => {
+              item.reset(resetTriggers);
+          })
+        }
     }
     dispatchEntityChangedEvent(entityIds: Array<string>) {
         this.dispatchEvent(new ItemListChangedEvent(this, entityIds));

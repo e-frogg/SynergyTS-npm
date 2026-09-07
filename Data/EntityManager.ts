@@ -5,12 +5,13 @@ import Repository from "./Repository";
 import DiffManager from "./DiffManager";
 import Criteria from "./Criteria/Criteria";
 import CriteriaConverter from "./Criteria/CriteriaConverter";
+import AuthErrorEvent from "./Event/AuthErrorEvent";
 
 interface EntityClass<T extends Entity> {
     new(...args: any[]): T;
 }
 
-import dataLoadResult from "./DataLoader";
+import {dataLoadResult} from "./DataLoader";
 
 export default class EntityManager {
 
@@ -32,7 +33,14 @@ export default class EntityManager {
         return this._repositoryManager;
     }
 
-    delete(entity: Entity): Promise<Entity> {
+    delete(entity: Entity): Promise<Entity>;
+    delete(entities: Entity[]): Promise<Entity[]>;
+    delete(entityOrEntities: Entity | Entity[]): Promise<Entity | Entity[]> {
+        if (Array.isArray(entityOrEntities)) {
+            return Promise.all(entityOrEntities.map((entity) => this.delete(entity)));
+        }
+
+        const entity = entityOrEntities;
         let entityType = entity.constructor.name;
 
         return new Promise((resolve, reject) => {
@@ -47,6 +55,10 @@ export default class EntityManager {
                     'Content-Type': 'application/json'
                 },
             }).then(response => {
+                if (this._dataLoader.checkAndDispatchAuthError(response)) {
+                    reject(new AuthErrorEvent(response));
+                    return;
+                }
                 resolve(entity);
             }).catch(error => {
                 console.log(error);
@@ -64,6 +76,7 @@ export default class EntityManager {
                 ? this.getEntityUrl(entityType, entityId)
                 : this.getCollectionUrl(entityType);
             let method = entity._isPersisted ? 'PUT' : 'POST';
+          console.log("saaave !! ",update);
             fetch(url, {
                 method: method,
                 headers: {
@@ -71,8 +84,11 @@ export default class EntityManager {
                 },
                 body: JSON.stringify(update)
             }).then(response => {
-                response.json().then
-                (data => {
+                if (this._dataLoader.checkAndDispatchAuthError(response)) {
+                    reject(new AuthErrorEvent(response));
+                    return;
+                }
+                response.json().then(data => {
                     let id = data.id;
                     //TODO : mettre l'entity dans le repository, avant ou après,
                     // mais il faudrait que l'entity qui est dans le repository
@@ -81,17 +97,15 @@ export default class EntityManager {
                     resolve(entity);
                 })
             }).catch(error => {
-                console.error(error);
                 reject(error);
             })
-            console.log(`Saving ${entityType} to the database: ${update}`)
 
         });
         // return new Promise()
     }
-    public save(entity: Entity): Promise<Entity> {
+    public save(entity: Entity, fields?: string[]): Promise<Entity> {
         // save entity to the database
-        let diff = this._diffManager.computeDiff(entity);
+        let diff = this._diffManager.computeDiff(entity, fields);
         if(Object.keys(diff).length === 0) {
             return new Promise((resolve, reject) => {
                 resolve(entity);
@@ -103,14 +117,13 @@ export default class EntityManager {
         return Promise.all(entities.map(entity => this.save(entity)));
     }
 
-    search<T extends Entity>(theClass: EntityClass<T>, criteria?: Criteria): Promise<dataLoadResult> {
+    search<T extends Entity>(theClass: EntityClass<T>, criteria?: Criteria, isFullUpdate: boolean = false): Promise<dataLoadResult> {
         criteria ??= new Criteria();
-        console.debug( 'search',this.getSearchUrl(theClass.name),
-            CriteriaConverter.toJson(criteria));
         return this.load(
             this.getSearchUrl(theClass.name),
             CriteriaConverter.toJson(criteria),
-            'POST'
+            'POST',
+          isFullUpdate
         )
     }
 
@@ -132,9 +145,10 @@ export default class EntityManager {
     }
 
     // forward to dataLoader
-    public load( url: string, data: object | null = null, method: string = 'GET'): Promise<dataLoadResult> {
+    public load( url: string, data: object | null = null, method?: string, forceFullUpdate: boolean|null = null ): Promise<dataLoadResult> {
+        method ??= (null === data ? 'GET' : 'POST');
         return new Promise((resolve, reject) => {
-            this.dataLoader.load(url, data, method).then((event) => {
+            this.dataLoader.load(url, data, method, forceFullUpdate).then((event) => {
                 resolve(event);
             }).catch(error => {
                 console.log(error);
