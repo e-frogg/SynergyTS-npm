@@ -11,6 +11,16 @@ export type dataLoadResult = {
   totalCount: null | number
 };
 
+export class DataLoaderHttpError extends Error {
+    constructor(
+        public readonly status: number,
+        public readonly payload: unknown,
+    ) {
+        super(`Request failed with status ${status}`);
+        this.name = 'DataLoaderHttpError';
+    }
+}
+
 export default class DataLoader extends EventDispatcher {
 
     private mercureDataLoaderSources: { [key: string]: EventSource } = {};
@@ -119,7 +129,12 @@ export default class DataLoader extends EventDispatcher {
                     fail(new AuthErrorEvent(response));
                     return;
                 }
-                return response.json().then(({mercureUrl, data, mainIds, totalCount}:{mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}, totalCount: null|number}) => {
+                return response.json().then((payload: {mercureUrl:string|null,data:any,mainIds:null|{string:Array<string>}, totalCount: null|number}) => {
+                    if (!response.ok) {
+                        fail(new DataLoaderHttpError(response.status, payload));
+                        return;
+                    }
+                    const {mercureUrl, data, mainIds, totalCount} = payload;
                     this.inject(data, forceFullUpdate ?? this.autoResetRepositoriesOnLoad);
                     this.initialize();
                     if (mercureUrl) {
